@@ -566,6 +566,7 @@ body.hold-active #play-btn.held {
 }
 
 .recent-play-btn,
+.recent-load-btn,
 .recent-save-btn {
   font-family: var(--font-mono);
   font-size: 0.62rem;
@@ -585,6 +586,18 @@ body.hold-active #play-btn.held {
 
 .recent-play-btn:hover {
   background: rgba(150, 50, 255, 0.2);
+  border-color: var(--accent);
+}
+
+.recent-load-btn {
+  color: var(--accent);
+  border-color: rgba(150, 60, 255, 0.35);
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+}
+
+.recent-load-btn:hover {
+  background: rgba(150, 50, 255, 0.15);
   border-color: var(--accent);
 }
 

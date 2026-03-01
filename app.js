@@ -532,6 +532,28 @@
     playNotesOnly();
   }
 
+  /**
+   * Play a sound from saved params without changing P or the UI.
+   * All audio reads happen synchronously in playNotesOnly/playNote,
+   * so we can swap P, play, and restore immediately.
+   */
+  function previewSound(params) {
+    const snapshot = {};
+    for (const k of SHARE_KEYS) snapshot[k] = P[k];
+
+    for (const k of SHARE_KEYS) {
+      if (k in params) P[k] = params[k];
+    }
+
+    initAudio();
+    syncAudioToParams();
+    rotation = Math.random();
+    playNotesOnly();
+
+    // Restore P — audio nodes keep the preview values until next play
+    for (const k of SHARE_KEYS) P[k] = snapshot[k];
+  }
+
 
   // ===========================================================================
   // RANDOMIZERS
@@ -869,8 +891,14 @@
   function replayRecent(id) {
     const r = recentPlays.find(x => x.id === id);
     if (!r) return;
+    previewSound(r.params);
+  }
+
+  function loadRecentById(id) {
+    const r = recentPlays.find(x => x.id === id);
+    if (!r) return;
     loadSound(r.params);
-    setTimeout(playNotesOnly, 30);
+    showToast('Loaded: ' + r.name);
   }
 
   function saveRecentById(id) {
@@ -907,6 +935,7 @@
           </div>
           <div class="recent-actions">
             <button class="recent-play-btn" data-action="replay" aria-label="Play">▶</button>
+            <button class="recent-load-btn" data-action="load" aria-label="Load">LOAD</button>
             <button class="recent-save-btn" data-action="save" aria-label="Save">💾</button>
             <button class="recent-save-btn" data-action="share" aria-label="Share">🔗</button>
           </div>
@@ -961,8 +990,9 @@
   }
 
   function loadAndPlay(id) {
-    loadSoundById(id);
-    setTimeout(playNotesOnly, 40);
+    const f = getFavorites().find(x => x.id === id);
+    if (!f) return;
+    previewSound(f.params);
   }
 
   function renderSoundBank() {
@@ -1158,6 +1188,7 @@
 
       switch (btn.dataset.action) {
         case 'replay': replayRecent(id); break;
+        case 'load':   loadRecentById(id); break;
         case 'save':   saveRecentById(id); break;
         case 'share': {
           const r = recentPlays.find(x => x.id === id);
@@ -1281,7 +1312,7 @@
     playBtn.addEventListener('click', () => {
       initAudio();
       if (P.autoRandomize) playCluster();
-      else playNotesOnly();
+      else { syncAudioToParams(); playNotesOnly(); }
       if (P.holdMode) scheduleHoldLoop();
     });
 
