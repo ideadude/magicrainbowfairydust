@@ -514,15 +514,13 @@ body.hold-active #play-btn.held {
 .picked-notes {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.2rem;
   margin-top: 0.35rem;
   flex-wrap: wrap;
 }
 
 .picked-note-list {
-  display: flex;
-  gap: 0.2rem;
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .picked-note {
