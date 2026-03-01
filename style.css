@@ -509,6 +509,49 @@ body.hold-active #play-btn.held {
 }
 
 
+/* ===== PICKED NOTES (random mode) ===== */
+
+.picked-notes {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.picked-note-list {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+}
+
+.picked-note {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  padding: 0.12rem 0.35rem;
+  background: rgba(150, 50, 255, 0.12);
+  border: 1px solid rgba(150, 60, 255, 0.3);
+  border-radius: 2px;
+  color: var(--accent);
+}
+
+.picked-dice-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.3rem;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.picked-dice-btn:hover {
+  border-color: var(--accent);
+  background: rgba(150, 50, 255, 0.15);
+}
+
+
 /* ===== RECENT PLAYS ===== */
 
 #recent-plays {

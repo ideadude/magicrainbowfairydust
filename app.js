@@ -62,7 +62,7 @@
   // Keys included in share URLs — everything that affects sound
   const SHARE_KEYS = [
     'scale', 'rootNoteIdx', 'octave', 'numNotes', 'octaveRange',
-    'bpm', 'noteDiv', 'noteDuration', 'direction',
+    'bpm', 'noteDiv', 'noteDuration', 'direction', 'pickedNotes',
     'reverbAmount', 'delayTime', 'delayFeedback', 'delayVol', 'delayTone',
     'eqLow', 'eqMid', 'eqHigh', 'delayEqLow', 'delayEqMid', 'delayEqHigh',
     'volume', 'reverseEcho',
@@ -97,6 +97,7 @@
     delayEqMid:    0,
     delayEqHigh:   0,
     volume:        0.65,
+    pickedNotes:   [],
     holdMode:      false,
     wildMode:      false,
     autoRandomize: true,
@@ -178,6 +179,10 @@
 
   function generateName() {
     return pick(NAME_ADJ) + ' ' + pick(NAME_NOUN);
+  }
+
+  function midiToName(midi) {
+    return NOTE_NAMES[midi % 12] + Math.floor(midi / 12 - 1);
   }
 
   function shuffleArray(arr) {
@@ -477,6 +482,40 @@
 
 
   // ===========================================================================
+  // RANDOM NOTE PICKING
+  // ===========================================================================
+
+  function pickRandomNotes() {
+    const all = getAllScaleNotes();
+    if (!all.length) { P.pickedNotes = []; renderPickedNotes(); return; }
+    P.pickedNotes = [];
+    for (let i = 0; i < P.numNotes; i++) {
+      P.pickedNotes.push(pick(all));
+    }
+    renderPickedNotes();
+  }
+
+  function renderPickedNotes() {
+    const container = $('picked-notes');
+    if (!container) return;
+
+    if (P.direction !== 'rand' || !P.pickedNotes.length) {
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'flex';
+    const notesHtml = P.pickedNotes.map(midi =>
+      `<span class="picked-note">${midiToName(midi)}</span>`
+    ).join('');
+
+    container.innerHTML =
+      `<div class="picked-note-list">${notesHtml}</div>` +
+      `<button class="picked-dice-btn" id="dice-notes-btn" aria-label="Randomize notes">🎲</button>`;
+  }
+
+
+  // ===========================================================================
   // PLAY ENGINE
   // ===========================================================================
 
@@ -484,12 +523,16 @@
     initAudio();
     stopAllNotes();
 
-    const gen   = playGen;
-    const notes = getActiveNotes();
-    let ordered = [...notes].sort((a, b) => a - b);
+    const gen = playGen;
+    let ordered;
 
-    if (P.direction === 'desc') ordered.reverse();
-    else if (P.direction === 'rand') shuffleArray(ordered);
+    if (P.direction === 'rand' && P.pickedNotes && P.pickedNotes.length) {
+      ordered = [...P.pickedNotes];
+    } else {
+      const notes = getActiveNotes();
+      ordered = [...notes].sort((a, b) => a - b);
+      if (P.direction === 'desc') ordered.reverse();
+    }
 
     const spacingMs = getSpacingMs();
 
@@ -588,6 +631,8 @@
     P.delayEqHigh = 0;
 
     P.reverseEcho = Math.random() < 0.35;
+
+    if (P.direction === 'rand') pickRandomNotes();
   }
 
   function wildRandomize() {
@@ -616,6 +661,8 @@
     P.delayEqHigh = Math.round((Math.random() - 0.5) * 16);
 
     P.reverseEcho = Math.random() < 0.5;
+
+    if (P.direction === 'rand') pickRandomNotes();
   }
 
 
@@ -1119,6 +1166,8 @@
     syncToggle('reverse-echo-btn', P.reverseEcho);
     syncToggle('auto-btn',         P.autoRandomize);
 
+    renderPickedNotes();
+
     const subLabel = $('btn-sub-label');
     if (subLabel && !isHeld) {
       subLabel.textContent = P.autoRandomize ? 'click to sparkle' : '▶ play your mix';
@@ -1230,18 +1279,18 @@
     syncUIToParams();
 
     // Dropdowns
-    $('scale-select').addEventListener('change', e => { P.scale = e.target.value; setAutoRandomize(false); });
-    $('root-note-select').addEventListener('change', e => { P.rootNoteIdx = parseInt(e.target.value); setAutoRandomize(false); });
-    $('octave-select').addEventListener('change', e => { P.octave = parseInt(e.target.value); setAutoRandomize(false); });
-    $('direction-select').addEventListener('change', e => { P.direction = e.target.value; setAutoRandomize(false); });
+    $('scale-select').addEventListener('change', e => { P.scale = e.target.value; setAutoRandomize(false); if (P.direction === 'rand') pickRandomNotes(); });
+    $('root-note-select').addEventListener('change', e => { P.rootNoteIdx = parseInt(e.target.value); setAutoRandomize(false); if (P.direction === 'rand') pickRandomNotes(); });
+    $('octave-select').addEventListener('change', e => { P.octave = parseInt(e.target.value); setAutoRandomize(false); if (P.direction === 'rand') pickRandomNotes(); });
+    $('direction-select').addEventListener('change', e => { P.direction = e.target.value; setAutoRandomize(false); if (P.direction === 'rand') pickRandomNotes(); else renderPickedNotes(); });
     $('note-div-select').addEventListener('change', e => { P.noteDiv = parseFloat(e.target.value); setAutoRandomize(false); });
 
     // Sliders
     const int = v => parseInt(v);
     const pct = v => parseInt(v) / 100;
 
-    bindSlider('sl-notes',     'numNotes',      'v-notes',     int);
-    bindSlider('sl-oct-range', 'octaveRange',   'v-oct-range', int);
+    bindSlider('sl-notes',     'numNotes',      'v-notes',     int, () => { if (P.direction === 'rand') pickRandomNotes(); });
+    bindSlider('sl-oct-range', 'octaveRange',   'v-oct-range', int, () => { if (P.direction === 'rand') pickRandomNotes(); });
     bindSlider('sl-bpm',       'bpm',           'v-bpm',       int);
     bindSlider('sl-dur',       'noteDuration',  'v-dur',       int);
     bindSlider('sl-reverb',    'reverbAmount',  'v-reverb',    pct, () => { if (actx) reverbGain.gain.setTargetAtTime(P.reverbAmount, actx.currentTime, 0.1); });
@@ -1327,6 +1376,14 @@
       if (e.code === 'Space') { e.preventDefault(); playBtn.click(); }
       if (e.code === 'KeyS' && recentPlays.length) saveRecentById(recentPlays[0].id);
       if (e.code === 'KeyH') $('hold-btn').click();
+    });
+
+    // Dice button for re-rolling random notes
+    $('picked-notes').addEventListener('click', e => {
+      if (e.target.closest('#dice-notes-btn')) {
+        pickRandomNotes();
+        setAutoRandomize(false);
+      }
     });
 
     // Delegated events for dynamic lists
