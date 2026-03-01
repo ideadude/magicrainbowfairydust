@@ -1312,9 +1312,7 @@
       syncToggle('hold-btn', P.holdMode);
       document.body.classList.toggle('hold-active', P.holdMode);
       if (P.holdMode) {
-        initAudio();
-        startHold();
-        $('btn-sub-label').textContent = '⟳ looping';
+        $('btn-sub-label').textContent = '⟳ hold mode';
       } else {
         endHold();
         $('btn-sub-label').textContent = P.autoRandomize ? 'click to sparkle' : '▶ play your mix';
