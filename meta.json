@@ -1,0 +1,15 @@
+{
+  "seeds": ["sparkle", "rainbow", "fairy", "rotate", "resonator", "cascade"],
+  "description": "Six notes rotating through a scale with delay echo, reverb, and an SMR-style LED ring around the button. Inspired by magicrainbowfairydust.com and Andrew Huang's Spectral Multiband Resonator patch. Randomizes notes, tempo, delay time, reverse echo, reverb amount, and tone — different every time.",
+  "created": "2026-03-01",
+  "updated": "2026-03-01",
+  "tokens_used": 0,
+  "model": "claude-sonnet-4-6",
+  "versions": [
+    {
+      "v": 1,
+      "date": "2026-03-01",
+      "changes": "Initial release: SMR-style 6-note clusters rotating through scales, delay echo (with reverse mode + tone control), 3-band EQ for both main and delay, convolution reverb, LED ring visualization around arcade button, particle effects, hold mode, randomize-all, localStorage favorites with naming, synthy dark CRT aesthetic."
+    }
+  ]
+}
